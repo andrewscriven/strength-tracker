@@ -1,12 +1,21 @@
 import { computed, ref, watch } from 'vue'
 
 const STORAGE_KEY = 'strength-tracker-v1'
+const LEGACY_STORAGE_KEY = 'lf3-strength-tracker-v1'
 
 export type CellValues = Record<string, string>
 
 function loadRaw(): CellValues {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    let raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) {
+      const legacy = localStorage.getItem(LEGACY_STORAGE_KEY)
+      if (legacy) {
+        raw = legacy
+        localStorage.setItem(STORAGE_KEY, legacy)
+        localStorage.removeItem(LEGACY_STORAGE_KEY)
+      }
+    }
     if (!raw) return {}
     const parsed = JSON.parse(raw) as unknown
     if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
