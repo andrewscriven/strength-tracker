@@ -1,0 +1,31 @@
+{
+  "name": "strength-tracker",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "fetch:sheet": "tsx scripts/fetch-sheets.ts",
+    "build:lambda": "esbuild lambda/handler.ts --bundle --platform=node --target=node20 --format=cjs --outfile=lambda/dist/index.js --sources-content=false",
+    "infra:synth": "npm --prefix infra/cdk run synth",
+    "infra:deploy": "npm --prefix infra/cdk run deploy"
+  },
+  "dependencies": {
+    "vue": "^3.5.32"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-cloudfront": "^3.787.0",
+    "@aws-sdk/client-s3": "^3.787.0",
+    "@types/node": "^24.12.2",
+    "@vitejs/plugin-vue": "^6.0.6",
+    "@vue/tsconfig": "^0.9.1",
+    "dotenv": "^16.6.1",
+    "esbuild": "^0.28.0",
+    "tsx": "^4.19.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.10",
+    "vue-tsc": "^3.2.7"
+  }
+}

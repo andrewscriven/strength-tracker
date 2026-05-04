@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: '2010-09-09'
+# Legacy reference. Prefer `infra/cdk` (StrengthTracker / ST) for new deploys — tenant-aware CDK.
+Description: CloudFront in front of S3 static site (LF3 tracker). Attach bucket policy using Output SourceArnForBucketPolicy.
+
+Parameters:
+  BucketName:
+    Type: String
+    Default: strength-training-tracker
+  S3Region:
+    Type: String
+    Default: ca-central-1
+    AllowedValues:
+      - ca-central-1
+      - us-east-1
+      - us-west-2
+      - eu-west-1
+
+Resources:
+  OAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub '${AWS::StackName}-oac'
+        Description: OAC for LF3 tracker S3 origin
+        SigningBehavior: always
+        SigningProtocol: sigv4
+        OriginAccessControlOriginType: s3
+
+  Distribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: LF3 strength tracker
+        HttpVersion: http2and3
+        PriceClass: PriceClass_100
+        DefaultRootObject: index.html
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true
+        Origins:
+          - Id: S3Origin
+            DomainName: !Sub '${BucketName}.s3.${S3Region}.amazonaws.com'
+            OriginAccessControlId: !GetAtt OAC.Id
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: [GET, HEAD, OPTIONS]
+          CachedMethods: [GET, HEAD]
+          Compress: true
+          CachePolicyId: 658327ea-f89d-4fab-9efd-0552d410cd8c
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingTTL: 0
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingTTL: 0
+
+Outputs:
+  DistributionId:
+    Value: !Ref Distribution
+  DistributionDomainName:
+    Value: !GetAtt Distribution.DomainName
+  SourceArnForBucketPolicy:
+    Description: Use in S3 bucket policy condition AWS:SourceArn.
+    Value: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${Distribution}'

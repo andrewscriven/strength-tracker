@@ -1,0 +1,13 @@
+{
+  "app": "npx ts-node --prefer-ts-exts bin/strength-tracker.ts",
+  "context": {
+    "@aws-cdk/core:stackRelativeExports": true,
+    "tenantSlug": "default",
+    "stage": "dev",
+    "productPrefix": "ST",
+    "destructiveDeletes": true,
+    "appCallbackUrls": ["http://localhost:5173/"],
+    "appLogoutUrls": ["http://localhost:5173/"],
+    "baseDomain": ""
+  }
+}
